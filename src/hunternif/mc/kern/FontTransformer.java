@@ -1,8 +1,5 @@
 package hunternif.mc.kern;
 
-import java.util.ListIterator;
-import java.util.logging.Logger;
-
 import net.minecraft.launchwrapper.IClassTransformer;
 
 import org.objectweb.asm.ClassReader;
@@ -39,30 +36,31 @@ public class FontTransformer implements IClassTransformer {
 				     * FLOAD 7: f
 				     * FADD
 					 */
-					ListIterator<AbstractInsnNode> iter = method.instructions.iterator();
-					while (iter.hasNext()) {
-						AbstractInsnNode node = iter.next();
+					for (int i = 0; i < method.instructions.size(); i++) {
+						AbstractInsnNode node = method.instructions.get(i);
+						
 						// Look for the FCONST_1 node:
-						if (node.getOpcode() == Opcodes.FCONST_1 && iter.hasPrevious() && iter.hasNext()) {
+						if (node.getOpcode() == Opcodes.FCONST_1) {
 							System.out.println("Found FCONST_1");
 							// Check that the previous node is FLOAD 9:
-							AbstractInsnNode prevNode = iter.previous();
-							iter.next(); // Move the iterator back
+							AbstractInsnNode prevNode = method.instructions.get(i - 1);							
 							if (prevNode.getOpcode() != Opcodes.FLOAD ||
 									prevNode.getType() != AbstractInsnNode.VAR_INSN ||
 									((VarInsnNode)prevNode).var != 9) {
 								continue;
 							}
 							System.out.println("Found FLOAD 9");
+							
 							// Check that the next node is FADD:
-							AbstractInsnNode nextNode = iter.next();
-							iter.previous(); // Move the iterator back
-							if (prevNode.getOpcode() != Opcodes.FADD) {
+							AbstractInsnNode nextNode = method.instructions.get(i + 1);
+							
+							if (nextNode.getOpcode() != Opcodes.FADD) {
 								continue;
 							}
 							System.out.println("Found FADD");
+							
 							// Replace FCONST_1 with FLOAD 7:
-							iter.set(new VarInsnNode(Opcodes.FLOAD, 7));
+							method.instructions.set(node, new VarInsnNode(Opcodes.FLOAD, 7));
 							break;
 						}
 					}
