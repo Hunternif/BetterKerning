@@ -15,7 +15,7 @@ public class FontTransformer implements IClassTransformer {
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes) {
 		if (name.equals("net.minecraft.client.gui.FontRenderer")) {
-			System.out.println("Inspecting class FontRenderer");
+			log("Inspecting class FontRenderer");
 			
 			ClassReader cr = new ClassReader(bytes);
 			ClassNode classNode = new ClassNode();
@@ -23,7 +23,7 @@ public class FontTransformer implements IClassTransformer {
 			
 			for (MethodNode method : classNode.methods) {
 				if (method.name.equals("renderStringAtPos")) {
-					System.out.println("Inspecting method renderStringAtPos");
+					log("Inspecting method renderStringAtPos");
 					/* Need to replace
 					 * 
 					 * FLOAD 9: f1
@@ -41,7 +41,7 @@ public class FontTransformer implements IClassTransformer {
 						
 						// Look for the FCONST_1 node:
 						if (node.getOpcode() == Opcodes.FCONST_1) {
-							System.out.println("Found FCONST_1");
+							log("Found FCONST_1");
 							// Check that the previous node is FLOAD 9:
 							AbstractInsnNode prevNode = method.instructions.get(i - 1);							
 							if (prevNode.getOpcode() != Opcodes.FLOAD ||
@@ -49,7 +49,7 @@ public class FontTransformer implements IClassTransformer {
 									((VarInsnNode)prevNode).var != 9) {
 								continue;
 							}
-							System.out.println("Found FLOAD 9");
+							log("Found FLOAD 9");
 							
 							// Check that the next node is FADD:
 							AbstractInsnNode nextNode = method.instructions.get(i + 1);
@@ -57,13 +57,15 @@ public class FontTransformer implements IClassTransformer {
 							if (nextNode.getOpcode() != Opcodes.FADD) {
 								continue;
 							}
-							System.out.println("Found FADD");
+							log("Found FADD");
 							
 							// Replace FCONST_1 with FLOAD 7:
 							method.instructions.set(node, new VarInsnNode(Opcodes.FLOAD, 7));
 							break;
 						}
 					}
+				} else if (method.name.equals("getStringWidth")) {
+					log("inspecting method getStringWidth");
 				}
 			}
 			
@@ -72,6 +74,13 @@ public class FontTransformer implements IClassTransformer {
 			return cw.toByteArray();
 		}
 		return bytes;
+	}
+	
+	/** A simple dirty logger method because I couldn't find a proper logger.
+	 * Appends "[BetterKerning ASM] " to the message and prints it to System.out
+	 */
+	private static void log(String message) {
+		System.out.println("[BetterKerning ASM] " + message);
 	}
 
 }
