@@ -54,7 +54,7 @@
 	</target>
 
 	<target name="copy and replace tokens in mcmod.info">
-		<copy file="src/mcmod.info" todir="${mcp.reobf}">
+		<copy file="src/mcmod.info" todir="${mcp.reobf}" failonerror="false">
 			<filterset begintoken="@@" endtoken="@@">
                 <filter token="MOD_VERSION" value="${mod.version}"/>
                 <filter token="MC_VERSION" value="${minecraft.version}"/>
@@ -81,10 +81,13 @@
 
 	<target name="package">
 		<mkdir dir="${dir.release}" />
-		<jar destfile="${dir.release}/${mod.id}-${mod.version}-mc${minecraft.version}.zip">
+		<jar destfile="${dir.release}/${mod.id}-${mod.version}-mc${minecraft.version}.jar">
 			<fileset dir="${mcp.reobf}" />
 			<fileset dir="src" includes="assets/**,*.png" />
-			<manifest file="{src/MANIFEST.MF}"></manifest>
+			<!-- manifest for the coremod -->
+			<manifest>
+				<attribute name="FMLCorePlugin" value="${coremod.class}"/>
+			</manifest>
 		</jar>
 	</target>
 
