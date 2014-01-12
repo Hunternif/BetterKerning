@@ -35,14 +35,14 @@ public class FontTransformer implements IClassTransformer {
 					/* Need to replace
 					 * 
 					 * FLOAD 9: f1
-				     * FCONST_1
-				     * FADD
-				     * 
-				     * with
-				     * 
-				     * FLOAD 9: f1
-				     * FLOAD 7: f
-				     * FADD
+					 * FCONST_1
+					 * FADD
+					 * 
+					 * with
+					 * 
+					 * FLOAD 9: f1
+					 * FLOAD 7: f
+					 * FADD
 					 */
 					for (int i = 0; i < method.instructions.size(); i++) {
 						AbstractInsnNode node = method.instructions.get(i);
