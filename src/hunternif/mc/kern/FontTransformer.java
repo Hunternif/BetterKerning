@@ -13,17 +13,12 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
-import cpw.mods.fml.common.FMLLog;
-
 public class FontTransformer implements IClassTransformer {
 
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes) {
-		Logger log = Logger.getLogger("BetterKerning");
-		log.setParent(FMLLog.getLogger());
-		
 		if (name.equals("net.minecraft.client.gui.FontRenderer")) {
-			log.info("Inspecting class FontRenderer");
+			System.out.println("Inspecting class FontRenderer");
 			
 			ClassReader cr = new ClassReader(bytes);
 			ClassNode classNode = new ClassNode();
@@ -31,7 +26,7 @@ public class FontTransformer implements IClassTransformer {
 			
 			for (MethodNode method : classNode.methods) {
 				if (method.name.equals("renderStringAtPos")) {
-					log.info("Inspecting method renderStringAtPos");
+					System.out.println("Inspecting method renderStringAtPos");
 					/* Need to replace
 					 * 
 					 * FLOAD 9: f1
@@ -49,7 +44,7 @@ public class FontTransformer implements IClassTransformer {
 						AbstractInsnNode node = iter.next();
 						// Look for the FCONST_1 node:
 						if (node.getOpcode() == Opcodes.FCONST_1 && iter.hasPrevious() && iter.hasNext()) {
-							log.info("Found FCONST_1");
+							System.out.println("Found FCONST_1");
 							// Check that the previous node is FLOAD 9:
 							AbstractInsnNode prevNode = iter.previous();
 							iter.next(); // Move the iterator back
@@ -58,14 +53,14 @@ public class FontTransformer implements IClassTransformer {
 									((VarInsnNode)prevNode).var != 9) {
 								continue;
 							}
-							log.info("Found FLOAD 9");
+							System.out.println("Found FLOAD 9");
 							// Check that the next node is FADD:
 							AbstractInsnNode nextNode = iter.next();
 							iter.previous(); // Move the iterator back
 							if (prevNode.getOpcode() != Opcodes.FADD) {
 								continue;
 							}
-							log.info("Found FADD");
+							System.out.println("Found FADD");
 							// Replace FCONST_1 with FLOAD 7:
 							iter.set(new VarInsnNode(Opcodes.FLOAD, 7));
 							break;
