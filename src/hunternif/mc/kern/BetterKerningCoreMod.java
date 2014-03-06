@@ -3,9 +3,12 @@ package hunternif.mc.kern;
 import java.util.Map;
 
 import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
+import cpw.mods.fml.relauncher.IFMLLoadingPlugin.MCVersion;
 
+@MCVersion("1.6.4")
 public class BetterKerningCoreMod implements IFMLLoadingPlugin {
-
+	public static boolean runtimeDeobf = true;
+	
 	@Override
 	@Deprecated
 	public String[] getLibraryRequestClass() {
@@ -28,6 +31,8 @@ public class BetterKerningCoreMod implements IFMLLoadingPlugin {
 	}
 
 	@Override
-	public void injectData(Map<String, Object> data) {}
+	public void injectData(Map<String, Object> data) {
+		runtimeDeobf = ((Boolean)data.get("runtimeDeobfuscationEnabled")).booleanValue();
+	}
 
 }

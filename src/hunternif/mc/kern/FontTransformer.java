@@ -22,15 +22,18 @@ public class FontTransformer implements IClassTransformer {
 
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] bytes) {
-		if (name.equals("net.minecraft.client.gui.FontRenderer")) {
-			log("Inspecting class FontRenderer");
+		if (transformedName.equals("net.minecraft.client.gui.FontRenderer")) {
+			log("Inspecting class FontRenderer " + name);
+			boolean deobf = BetterKerningCoreMod.runtimeDeobf;
+			log("Runtime deobfuscation: " + deobf);
 			
 			ClassReader cr = new ClassReader(bytes);
 			ClassNode classNode = new ClassNode();
 			cr.accept(classNode, 0);
 			
 			for (MethodNode method : classNode.methods) {
-				if (method.name.equals("renderStringAtPos")) {
+				if (method.name.equals("renderStringAtPos") ||
+					(method.name.equals("a") && method.desc.equals("(Ljava/lang/String;Z)V"))) {
 					log("Inspecting method renderStringAtPos");
 					/* Need to replace
 					 * 
@@ -74,7 +77,8 @@ public class FontTransformer implements IClassTransformer {
 							break;
 						}
 					}
-				} else if (method.name.equals("getStringWidth")) {
+				} else if (method.name.equals("getStringWidth") ||
+					(method.name.equals("a") && method.desc.equals("(Ljava/lang/String;)I"))) {
 					log("inspecting method getStringWidth");
 					/* Need to replace
 					 * 
@@ -84,7 +88,7 @@ public class FontTransformer implements IClassTransformer {
 					 * 
 					 * ILOAD 2: i
 					 * ALOAD 0: this
-					 * GETFIELD net/minecraft/client/gui/FontRenderer.unicodeFlag : boolean
+					 * GETFIELD net/minecraft/client/gui/FontRenderer.unicodeFlag : Z
 					 * IFEQ L24
 					 * ICONST_0
 					 * GOTO L25
@@ -111,7 +115,8 @@ public class FontTransformer implements IClassTransformer {
 						InsnList toInject = new InsnList();
 						toInject.add(new VarInsnNode(Opcodes.ILOAD, 2));
 						toInject.add(new VarInsnNode(Opcodes.ALOAD, 0));
-						toInject.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/client/gui/FontRenderer", "unicodeFlag", Type.BOOLEAN_TYPE.getDescriptor()));
+						toInject.add(new FieldInsnNode(Opcodes.GETFIELD, "net/minecraft/client/gui/FontRenderer",
+								deobf ? "field_78293_l" : "unicodeFlag", Type.BOOLEAN_TYPE.getDescriptor()));
 						toInject.add(new JumpInsnNode(Opcodes.IFEQ, label1));
 						toInject.add(new InsnNode(Opcodes.ICONST_0));
 						toInject.add(new JumpInsnNode(Opcodes.GOTO, label2));
